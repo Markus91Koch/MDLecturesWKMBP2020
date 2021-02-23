@@ -1,12 +1,12 @@
 # MDLecturesWKMBP2020
 
-This repository contains the lecture Materials for the Molecular Dynamics part (2nd part) of the TU Dresden physics course **"Numerics and Computer Simulations in Soft Condensed Matter"**.
+This repository contains the lecture Materials for the Molecular Dynamics section (2nd part) of the TU Dresden physics course **"Numerics and Computer Simulations in Soft Condensed Matter"**.
 
 There is also a [website](http://www.ipfdd.de/de/scmbp/soft-condensed-matter-and-biological-physics/numerik-und-computersimulationen-in-der-weichen-kondensierten-materie/) for this lecture.
 
 Here, you find the materials (jupyter-notebooks, LAMMPS and Python scripts), and worksheets.
 
-The first part (Introduction and Monte Carlo Methods) can be found [here](https://github.com/MartinWenge/LectureWKMBP2020).
+The first part (Introduction and Monte Carlo Methods) of this series of lectures, given by [Martin Wengenmayr](https://github.com/MartinWenge), can be found [here](https://github.com/MartinWenge/LectureWKMBP2020).
 
 ## Requirements
 
