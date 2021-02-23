@@ -1,0 +1,3 @@
+# Time-averaged data for fix 5
+# TimeStep c_1 v_dist v_fz
+5000000 20.3068 0.306847 1.53424

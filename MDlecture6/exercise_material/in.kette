@@ -1,0 +1,56 @@
+# Chain of N=100 in implicit solvent
+
+# Temperature settings
+variable        Tstart equal 2.0    
+variable        Tend equal v_Tstart # Tstart=Tend
+
+# Runtimes of simulation
+variable        eqsteps equal 1000000 # equilibration time
+variable        nsteps  equal 1000000 # measurement time
+
+# Averaging settings (frequency of measuring etc.)
+variable        dumpfreq equal 10000
+variable        dumpnr equal v_nsteps/v_dumpfreq
+
+# General definition of units, PBC, timestep, atom style
+units           lj
+atom_style      bond
+boundary        p p p
+timestep	0.005
+
+# LJ & bond global settings
+pair_style      lj/cut 2.5
+bond_style      fene
+
+# Read in initial conformation
+read_data	N100.data
+
+# LJ parameters (i, j, epsilon, sigma, r_cut)
+pair_coeff      1 1 1.0 1.0 1.12246
+
+# Bonding parameters
+bond_coeff      1 30.0 1.5 1.0 1.0
+special_bonds   fene
+
+# Group defintions
+group 		polymer    type 1
+
+# Velocity-Verlet and Thermostat
+fix             1 all nve
+fix             2 all langevin ${Tstart} ${Tend} 1.0 4129571
+
+# Thermodynamic Output
+thermo          1000
+thermo_style    custom step elapsed temp press etotal
+
+# Start equilibration run
+run		${eqsteps}
+reset_timestep 	0
+
+
+# INSERT A DUMP COMMAND HERE TO WRITE OUT TRAJECTORIES!
+# .... 
+
+# Start measurement run
+run             ${nsteps}
+write_data	final.data

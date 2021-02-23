@@ -1,0 +1,73 @@
+# protocol for measuring some brush profiles
+
+# basic settings
+units		lj
+atom_style	bond
+timestep        0.0025
+boundary        p p f
+
+### DEFINITION OF PAIR STYLES
+pair_style      lj/cut 2.5
+bond_style      fene
+
+### READ IN STARTING FILE
+read_data	brush.data
+
+#### LJ PAIR COEFFICIENS
+pair_coeff 	1*4 1*4 1.0 1.0 1.1225
+pair_coeff      4   4   0.0 0.0 1.1225
+
+### FENE BOND COEFFICIENTS
+bond_coeff      1 30 1.5 1.0 1.0
+special_bonds   fene
+
+### SOME GROUP DEFINITIONS
+group 		brush 		type # ENTER HERE...
+group 		brush_noheads 	type #
+group 		head 		type #
+group 		end 		type #
+group 		wall 		type #
+group 		fluid 		type #
+
+### MINIMIZATION 
+minimize        1.0e-6 1.0e-8 1000 10000
+
+### INITIAL VELOCITIES
+velocity        all create 1.5 4928459 dist gaussian
+
+#### TIME INTEGRATION IN NVE AND LANGEVIN THERMOSTAT
+fix             1 fluid nve
+fix             2 fluid langevin 1.5 1.5 1.0 48279345
+
+### DUMP FILE - MOVIE
+dump 		uw all dcd 10000 unwrap.dcd
+dump_modify 	uw unwrap yes
+
+dump 		w all dcd 10000 wrap.dcd
+
+### THERMODYNAMIC OUTPUT
+thermo          1000
+thermo_style    custom step elapsed temp etotal press
+
+### RUN THE JOB WITH SPRING
+run             5000000
+reset_timestep	0
+
+#################################
+### 2ND RUN WITH MEASUREMENTS ###
+#################################
+
+### MEASURING (AVERAGING) PARAMETERS
+variable 	run_time 	equal 5000000
+variable	measure_every 	equal 500
+variable	repeat_every	equal v_run_time/v_measure_every
+
+#### CALCULATE SOME HISTOGRAMS
+# ......
+
+### RUN THE JOB
+thermo_style    custom step elapsed temp etotal press
+run		 ${run_time}
+
+####################################
+write_data 	 end.data

@@ -1,0 +1,49 @@
+#temperature in reduced units
+variable temp equal 2.0
+
+#set up basic simulation stuff
+dimension 2
+units		lj
+atom_style	molecular
+boundary        p p p
+
+# pair and bond styles
+pair_style      lj/cut 1.12246
+bond_style      fene
+
+# Read in initial configuraiton
+read_data       2d_chain.data
+
+# Lennard Jones short cutoff
+pair_style      lj/cut 1.12246
+pair_coeff      1 1 1.0 1.0 1.12246
+
+# FENE type bond
+bond_coeff      1 30.0 1.5 1.0 1.0
+special_bonds   fene
+
+# time stepping, thermostat and 2d
+fix integrator  all nve
+fix dynamics    all langevin ${temp} ${temp} 1.0 252352
+fix run2d       all enforce2d
+
+# print out thermodynamic information regularly
+thermo          10000
+
+# equilibrate for some time
+run             5000000
+reset_timestep  0
+
+###############################
+## Mean Squared Displacement ##
+###############################
+
+# calculate and output MSD at regular time intervals
+compute         1 all msd
+fix             4 all ave/time 10 10 100 c_1[*] file msd.txt
+
+# run the simulation for X steps (measurement)
+run             10000000
+
+# write out the final conformation (to continue)
+write_data      2d_chain_final.data

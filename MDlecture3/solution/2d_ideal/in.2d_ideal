@@ -1,0 +1,51 @@
+# 2-dimensional monoatomic gas
+
+# basic parameters
+units		lj
+atom_style	atomic
+boundary        p p p # periodic
+dimension      	2
+
+## style of the pair potential ##
+pair_style      soft 2.5 # soft potential
+#pair_style      lj/cut 2.5 # Lennard-Jones
+
+# read in a conformation
+read_data       2d_ideal.data
+reset_timestep	0
+
+# Parameters for pair_style soft (here: interactions off)
+pair_coeff      1 1 0.0 2.5
+
+# parameters for Lennard-Jones (standard values)
+#pair_coeff	1 1 1.0 1.0 2.5
+
+# verlet-integration, thermostating, enforce 2d simulation 
+fix		1 all nve
+#fix             2 all langevin 1.5 1.5 1.0 8217311
+fix             2d all enforce2d
+
+##############################
+##### Velocity Histogram #####
+##############################
+
+# define absolute velocity of an atom
+variable        v_abs atom sqrt(vx*vx+vy*vy+vz*vz)
+fix             3 all ave/histo 1000 1000 1000000  0. 10. 50 v_v_abs file v_hist.txt mode vector
+
+###############################
+## Mean Squared Displacement ##
+###############################
+
+# calculate and output MSD at regular time intervals
+compute         1 all msd
+fix             4 all ave/time 10 10 100 c_1[*] file msd.txt
+
+# print out thermodynamic information regularly
+thermo		10000
+
+# run the simulation for X steps
+run		1000000
+
+# write out the final conformation (to continue)
+write_data	2d_ideal_final.data

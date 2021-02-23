@@ -1,0 +1,93 @@
+# umbrella sampling protocol for a nanoparticle entering a brush
+
+# basic settings
+units		lj
+atom_style	bond
+timestep        0.0025
+boundary        p p f
+
+### DEFINITION OF PAIR STYLES
+pair_style      lj/expand 2.5
+bond_style      fene
+
+### READ IN STARTING FILE
+read_data	brush.data
+
+#### LJ PAIR COEFFICIENS
+pair_coeff 	1*4 1*4 1.0 1.0 0.0 1.1225
+pair_coeff 	5 5 1.0 1.0 3.0 1.1225
+pair_modify     mix arithmetic tail yes
+pair_coeff      4 4 0.0 0.0 0.0
+
+### FENE BOND COEFFICIENTS
+bond_coeff      1 30 1.5 1.0 1.0
+special_bonds   fene
+
+### SOME GROUP DEFINITIONS
+group 		brush 		type 1 2 3
+group 		brush_noheads 	type 2 3
+group 		head 		type 1
+group 		end 		type 3
+group 		np 		type 5
+group 		wall 		type 4
+group 		fluid 		type 2 3 5
+
+#### TIME INTEGRATION IN NVE AND LANGEVIN THERMOSTAT
+fix             1 fluid nve
+fix             2 fluid langevin 1.5 1.5 1.0 48279345
+
+comm_style      tiled
+fix             bal all balance 20000 0.9 rcb
+
+### NP SPRING PARAMETERS
+variable	npz 	equal 18
+variable	npk 	equal 5.0 
+fix		3 np spring tether ${npk} 0.0 0.0 ${npz} 0.0
+
+### DUMP FILE - MOVIE
+dump 		uw all dcd 10000 unwrap.dcd
+dump_modify 	uw unwrap yes
+
+dump 		w all dcd 10000 wrap.dcd
+
+### THERMODYNAMIC OUTPUT
+thermo          1000
+thermo_style    custom step elapsed temp etotal press
+
+### RUN THE JOB WITH SPRING
+run             5000000
+reset_timestep	0
+
+#################################
+### 2ND RUN WITH MEASUREMENTS ###
+#################################
+
+### MEASURING (AVERAGING) PARAMETERS
+variable 	run_time 	equal 5000000
+variable	measure_every 	equal 500
+variable	repeat_every	equal v_run_time/v_measure_every
+
+### MEASURING SPRING FORCE
+compute         1 np    reduce ave z
+variable        dist    equal c_1-v_npz
+variable        fz    equal v_npk*(c_1-v_npz)
+
+### OUTPUT OF SPRING FORCE
+fix		4 np ave/time 1000 1 1000 c_1 v_dist v_fz file force.txt
+fix		5 np ave/time ${measure_every} ${repeat_every} ${run_time} c_1 v_dist v_fz file force_ave.txt
+
+### HISTOGRAM parameters
+variable        Nb      equal 200
+variable        lbox    equal 0.00
+variable        ubox    equal 40.0
+
+#### CALCULATE SOME HISTOGRAMS
+fix 		9  brush_noheads ave/histo ${measure_every} ${repeat_every} ${run_time} ${lbox} ${ubox} ${Nb} z file brush_dens.txt mode vector
+fix 		10 end   ave/histo  ${measure_every} ${repeat_every} ${run_time} ${lbox} ${ubox} ${Nb} z file end_dens.txt mode vector
+
+### RUN THE JOB
+thermo_style    custom step elapsed temp etotal press c_1 v_dist v_fz
+run		 ${run_time}
+
+####################################
+write_data 	 end.data

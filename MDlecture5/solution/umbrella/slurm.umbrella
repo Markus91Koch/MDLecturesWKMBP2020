@@ -1,0 +1,16 @@
+#!/bin/bash
+#SBATCH -J u2
+####SBATCH -p sandy
+####SBATCH -p gpu-cpu
+####SBATCH -A p_crystallization
+#SBATCH --time=100-23:59:00
+#SBATCH --output=m-%j.out
+#SBATCH --error=m-%j.err
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+##SBATCH --ntasks-per-core=1 #no HyperThreading
+#SBATCH --ntasks-per-node=20
+#SBATCH --exclude=node[10-16]
+#srun /scratch/s4688360/2017lammps/lammps-31Mar17_edited/lammps-31Mar17_softpot2_chicken_ellipsoid3/src/lmp_taurus < in.spring > spring.log
+mpirun -np 20 /scratch/koch-markus/lammps-31Mar17_softpot2/src/lmp_glaster < in.umbrella > umbrella.log
+
