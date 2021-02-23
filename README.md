@@ -4,7 +4,7 @@ This repository contains the lecture Materials for the Molecular Dynamics part (
 
 There is also a [website](http://www.ipfdd.de/de/scmbp/soft-condensed-matter-and-biological-physics/numerik-und-computersimulationen-in-der-weichen-kondensierten-materie/) for this lecture.
 
-Here, you find the source code, jupyter-notebooks and worksheets.
+Here, you find the materials (jupyter-notebooks, LAMMPS and Python scripts), and worksheets.
 
 The first part (Introduction and Monte Carlo Methods) can be found [here](https://github.com/MartinWenge/LectureWKMBP2020).
 
