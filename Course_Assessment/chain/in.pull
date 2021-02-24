@@ -1,0 +1,74 @@
+# LAMMPS script to simulate a chain
+# pulled at one and and fixed at the other
+
+# set up basic simulation parameters
+dimension       3
+units		lj
+atom_style	bond
+boundary        p p p
+variable        tstep equal 0.01
+timestep        ${tstep}
+
+comm_modify     cutoff 2.0
+neighbor        2.0 bin
+neigh_modify    every 1 delay 0 check yes
+
+# read configuration
+read_data       chain.data
+
+# ideal chain = no pair interactions
+pair_style      none
+
+# HERE: ACTIVATE ONE (!) bonding potential
+
+# EITHER: FENE bond
+#bond_style      fene
+#bond_coeff      1 30.0 1.5 0.0 0.0
+#special_bonds   fene
+
+# OR: harmonic bond
+#bond_style      harmonic
+#bond_coeff      1 50.0 0.0
+
+# set groups: type 1 = regular bead, 
+# type 2 is fixed end, 3 is pulled end
+group           moving type 1 3
+group           fixed type 2
+group           pulled type 3
+
+# minimize energy first to avoid overstretched bonds
+minimize        1e-4 1e-4 1000 1000
+reset_timestep  0
+
+# time integration and thermostat
+fix             1 moving nve
+fix             2 moving langevin 1.0 1.0 1.0 123871293
+
+# next step: equilibrate 
+thermo          100000
+run             1000000
+reset_timestep  0
+
+#############################################
+############# PRODUCTION RUN ################
+#############################################
+
+# specify simulation time as variable
+variable        tsampling equal 10500000
+
+# set the maximum force by a variable
+variable        maxforce equal 200
+
+# add an external force to the end particle that grows linearly with time
+variable        extforce equal 10*floor((step*v_maxforce)/(10*10000000))
+fix             3 pulled addforce v_extforce 0 0
+
+# measure average distance from one end to the other 
+# along the x axis (direction of force)
+variable        dist equal (x[40]-x[1])
+fix             4 all ave/time 10 25000 500000 v_dist v_extforce file force_vs_x.txt
+
+# perform the simulation
+thermo          10000
+thermo_style    custom step v_dist v_extforce
+run             ${tsampling}
