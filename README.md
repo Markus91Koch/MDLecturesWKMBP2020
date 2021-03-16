@@ -13,7 +13,7 @@ The first part (Introduction and Monte Carlo Methods) of this series of lectures
 ### For lectures 1 and 2
 
  - Python3 with numpy, matplotlib and pandas (best way is to install anaconda)
- - Jupiter notebook
+ - Jupyter notebook
 
 ### For lectures 3 and later
 
